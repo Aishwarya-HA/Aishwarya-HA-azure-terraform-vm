@@ -25,13 +25,16 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# Public IP
+# Public IP (use Standard SKU to avoid Basic quota limits)
 resource "azurerm_public_ip" "pip" {
   name                = "${var.prefix}-pip"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+
   allocation_method   = "Static"
-  sku                 = "Basic"
+  sku                 = "Standard"   # <- changed from Basic to Standard
+  # ip_version        = "IPv4"       # optional, default is IPv4
+  # sku_tier          = "Regional"   # optional, default is Regional
 }
 
 # Network Security Group (allow SSH)
@@ -67,7 +70,7 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-# Associate NSG with NIC (recommended with VM v3 resources)
+# Associate NSG with NIC
 resource "azurerm_network_interface_security_group_association" "nic_nsg" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
@@ -82,7 +85,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   admin_username      = var.admin_username
   network_interface_ids = [azurerm_network_interface.nic.id]
 
-  # Use SSH only (no passwords)
+  # SSH only (no passwords)
   disable_password_authentication = true
 
   admin_ssh_key {
@@ -90,7 +93,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
     public_key = var.ssh_public_key
   }
 
-  # ✅ REQUIRED with AzureRM v3.x: define OS disk explicitly
+  # ✅ Required in AzureRM v3.x
   os_disk {
     name                 = "${var.prefix}-osdisk"
     caching              = "ReadWrite"
@@ -98,7 +101,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
     disk_size_gb         = 30
   }
 
-  # Ubuntu 22.04 LTS (Jammy) Gen2 image
+  # Ubuntu 22.04 LTS (Jammy) Gen2
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
@@ -106,7 +109,6 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "latest"
   }
 
-  # Optional tags (helpful for cost & identification)
   tags = {
     Owner       = "Aishwarya"
     Project     = "GitHub-Actions-VM"
