@@ -29,7 +29,7 @@ variable "ssh_public_key" {
   sensitive   = true
 }
 
-# ✅ NEW: make VM size configurable; B2s is commonly available
+# Make VM size configurable; B2s is commonly available
 variable "vm_size" {
   description = "Azure VM size (SKU). Change if the default is not available in your region."
   type        = string
