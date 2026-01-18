@@ -81,7 +81,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
 
-  # ✅ Use the variable so we can change size easily if SKU isn't available
+  # Use variable so we can change size if SKU isn't available in the region
   size           = var.vm_size
   admin_username = var.admin_username
 
@@ -105,10 +105,3 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts-gen2"
-    version   = "latest"
-  }
-}
-``
