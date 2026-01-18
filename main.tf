@@ -80,8 +80,10 @@ resource "azurerm_linux_virtual_machine" "vm" {
   name                = "${var.prefix}-vm"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
-  size                = "Standard_B1s"
-  admin_username      = var.admin_username
+
+  # ✅ Use the variable so we can change size easily if SKU isn't available
+  size           = var.vm_size
+  admin_username = var.admin_username
 
   network_interface_ids = [
     azurerm_network_interface.nic.id
@@ -109,3 +111,4 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "latest"
   }
 }
+``
