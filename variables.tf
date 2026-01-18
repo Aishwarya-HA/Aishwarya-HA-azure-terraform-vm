@@ -2,7 +2,8 @@
 variable "location" {
   description = "Azure region for resources"
   type        = string
-  default     = "centralindia" # If capacity issues persist, change to 'southindia' or 'eastus'
+  # Changed from centralindia -> southindia to avoid capacity issues
+  default     = "southindia"  # try "eastus" if you still hit capacity limits
 }
 
 variable "prefix" {
@@ -29,9 +30,9 @@ variable "ssh_public_key" {
   sensitive   = true
 }
 
-# Make VM size configurable; B2s is commonly available
+# Make VM size configurable. B1ms is small & commonly available.
 variable "vm_size" {
   description = "Azure VM size (SKU). Change if the default is not available in your region."
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_B1ms"  # alternatives: Standard_B2s, Standard_D2s_v3, Standard_D2ads_v5
 }
