@@ -25,16 +25,18 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# Public IP (referenced in outputs)
+# Public IP (Standard SKU to avoid Basic SKU quota limits)
 resource "azurerm_public_ip" "pip" {
   name                = "${var.prefix}-pip"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  allocation_method   = "Static"
-  sku                 = "Basic"
+
+  allocation_method   = "Static"    # Standard requires Static
+  sku                 = "Standard"
+  ip_version          = "IPv4"
 }
 
-# Network Security Group (SSH only; lock down later by setting allowed_ssh_cidr)
+# Network Security Group (SSH only; lock down later via allowed_ssh_cidr)
 resource "azurerm_network_security_group" "nsg" {
   name                = "${var.prefix}-nsg"
   location            = azurerm_resource_group.rg.location
@@ -67,7 +69,7 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-# Attach NSG to NIC (so the SSH rule applies)
+# Attach NSG to NIC
 resource "azurerm_network_interface_security_group_association" "nic_nsg" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
@@ -89,10 +91,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
   admin_ssh_key {
     username   = var.admin_username
+    # IMPORTANT: must be an RSA public key (ssh-rsa ...)
     public_key = var.ssh_public_key
   }
 
-  # REQUIRED with Azurerm v3.x
+  # Required with AzureRM v3.x
   os_disk {
     name                 = "${var.prefix}-osdisk"
     caching              = "ReadWrite"
