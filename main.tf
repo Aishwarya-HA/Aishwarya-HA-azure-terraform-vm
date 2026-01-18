@@ -53,7 +53,7 @@ resource "azurerm_network_security_group" "nsg" {
     source_address_prefix      = var.allowed_ssh_cidr
     destination_address_prefix = "*"
   }
-} # <-- closes the NSG block correctly
+}
 
 # NIC
 resource "azurerm_network_interface" "nic" {
@@ -110,3 +110,4 @@ resource "azurerm_linux_virtual_machine" "vm" {
     sku       = "22_04-lts-gen2"
     version   = "latest"
   }
+}
