@@ -47,3 +47,42 @@ resource "azurerm_network_interface" "main" {
 #############################################
 resource "azurerm_linux_virtual_machine" "main" {
   name                = "${var.prefix}-vm"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+
+  # Size with good availability in India regions
+  size                = "Standard_D2s_v3"
+
+  # Variables from variables.tf
+  admin_username      = var.admin_username
+
+  # Attach the NIC created above
+  network_interface_ids = [
+    azurerm_network_interface.main.id
+  ]
+
+  # Use SSH key authentication
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = var.admin_ssh_public_key
+  }
+
+  disable_password_authentication = true
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  # Ubuntu 22.04 LTS
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+
+  tags = {
+    environment = "staging"
+  }
+}
