@@ -7,13 +7,12 @@ on:
       - main
   workflow_dispatch:
 
-# Ensures only one workflow runs at a time (prevents future locks)
+# Prevents multiple runs from causing state locks
 concurrency:
   group: terraform-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -21,29 +20,35 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ARM_USE_OIDC: true
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      TF_VAR_admin_ssh_public_key: ${{ secrets.ADMIN_SSH_PUBLIC_KEY }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      TF_VAR_admin_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
 
     steps:
+
+      # Step 1: Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Step 2: Install Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # ⭐ THIS FIXES YOUR STATE LOCK FOREVER ⭐
+      # Step 3: Initialize backend (forces reload of new state key)
       - name: Terraform Init
         run: terraform init -input=false -reconfigure -upgrade
 
+      # Step 4: Validate
       - name: Terraform Validate
         run: terraform validate
 
+      # Step 5: Plan with lock timeout (to avoid stuck lock)
       - name: Terraform Plan
         run: terraform plan -out=tfplan -lock-timeout=5m
 
+      # Step 6: Apply only on main branch
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -input=false -auto-approve tfplan
