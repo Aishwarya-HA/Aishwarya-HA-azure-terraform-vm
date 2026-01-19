@@ -3,36 +3,29 @@
 # Global Variables
 ###############################
 
-# Prefix used for naming all resources
 variable "prefix" {
-  description = "Resource name prefix"
+  description = "Resource naming prefix"
   type        = string
   default     = "tfvmex"
 }
 
-# Azure deployment region
 variable "location" {
-  description = "Azure region for all resources"
+  description = "Azure region for deployment"
   type        = string
-  default     = "Central India"   # ✔ Works reliably
+  default     = "Central India"
 }
 
 ###############################
 # VM Access Variables
 ###############################
 
-# Admin username for the VM
-# NOTE: Azure blocks some usernames like 'azureuser', 'admin', 'testadmin', 'root'
-# 'vmadmin' is safe and fully supported on Linux VMs
 variable "admin_username" {
-  description = "Admin username for the Linux VM"
+  description = "Admin username for Linux VM"
   type        = string
-  default     = "vmadmin"         # ✔ Updated to avoid Azure restrictions
+  default     = "vmadmin"
 }
 
-# SSH public key for login to the VM
-# This is passed via GitHub Actions secret: SSH_PUBLIC_KEY
 variable "admin_ssh_public_key" {
-  description = "SSH public key for VM login (from SSH keypair)"
+  description = "SSH public key for VM login"
   type        = string
 }
