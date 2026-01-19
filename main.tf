@@ -1,19 +1,11 @@
 
-#############################################
-# Resource Group
-#############################################
-
 resource "azurerm_resource_group" "example" {
   name     = "${var.prefix}-resources"
   location = var.location
 }
 
-#############################################
-# Network
-#############################################
-
 resource "azurerm_virtual_network" "main" {
-  name                = "${var.prefix}-vnet-new"   # Updated to avoid Azure stuck VNet
+  name                = "${var.prefix}-vnet-new"
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
@@ -38,20 +30,14 @@ resource "azurerm_network_interface" "main" {
   }
 }
 
-#############################################
-# Linux VM
-#############################################
-
 resource "azurerm_linux_virtual_machine" "main" {
   name                = "${var.prefix}-vm"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-  size                = "Standard_DS1_v2"      # Guaranteed available in Central India
+  size                = "Standard_B2ms"
   admin_username      = var.admin_username
 
-  network_interface_ids = [
-    azurerm_network_interface.main.id
-  ]
+  network_interface_ids = [azurerm_network_interface.main.id]
 
   admin_ssh_key {
     username   = var.admin_username
@@ -72,7 +58,5 @@ resource "azurerm_linux_virtual_machine" "main" {
     version   = "latest"
   }
 
-  tags = {
-    environment = "staging"
-  }
+  tags = { environment = "staging" }
 }
