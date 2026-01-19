@@ -1,11 +1,19 @@
 
+#############################################
+# Resource Group
+#############################################
+
 resource "azurerm_resource_group" "example" {
   name     = "${var.prefix}-resources"
   location = var.location
 }
 
+#############################################
+# Network
+#############################################
+
 resource "azurerm_virtual_network" "main" {
-  name                = "${var.prefix}-vnet-new"     # UPDATED NAME (fixes VNet creation issue)
+  name                = "${var.prefix}-vnet-new"   # Updated to avoid Azure stuck VNet
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
@@ -14,7 +22,7 @@ resource "azurerm_virtual_network" "main" {
 resource "azurerm_subnet" "internal" {
   name                 = "internal"
   resource_group_name  = azurerm_resource_group.example.name
-  virtual_network_name = azurerm_virtual_network.main.name  # References new VNet
+  virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
@@ -30,12 +38,17 @@ resource "azurerm_network_interface" "main" {
   }
 }
 
+#############################################
+# Linux VM
+#############################################
+
 resource "azurerm_linux_virtual_machine" "main" {
   name                = "${var.prefix}-vm"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-  size                = "Standard_B1ms"               # VALID in Central India
+  size                = "Standard_DS1_v2"      # Guaranteed available in Central India
   admin_username      = var.admin_username
+
   network_interface_ids = [
     azurerm_network_interface.main.id
   ]
