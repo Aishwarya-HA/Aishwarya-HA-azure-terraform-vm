@@ -1,12 +1,22 @@
-variable "prefix" {
-  default = "tfvmex"
+
+############################################
+# Provider (features required for azurerm)
+############################################
+provider "azurerm" {
+  features {}
 }
 
+############################################
+# Resource Group
+############################################
 resource "azurerm_resource_group" "example" {
   name     = "${var.prefix}-resources"
-  location = "West Europe"
+  location = var.location
 }
 
+############################################
+# Networking: VNet, Subnet, NIC
+############################################
 resource "azurerm_virtual_network" "main" {
   name                = "${var.prefix}-network"
   address_space       = ["10.0.0.0/16"]
@@ -27,45 +37,46 @@ resource "azurerm_network_interface" "main" {
   resource_group_name = azurerm_resource_group.example.name
 
   ip_configuration {
-    name                          = "testconfiguration1"
+    name                          = "ipconfig1"
     subnet_id                     = azurerm_subnet.internal.id
     private_ip_address_allocation = "Dynamic"
   }
 }
 
-resource "azurerm_virtual_machine" "main" {
-  name                  = "${var.prefix}-vm"
-  location              = azurerm_resource_group.example.location
-  resource_group_name   = azurerm_resource_group.example.name
-  network_interface_ids = [azurerm_network_interface.main.id]
-  vm_size               = "Standard_DS1_v2"
+############################################
+# Linux VM (modern resource)
+############################################
+resource "azurerm_linux_virtual_machine" "main" {
+  name                = "${var.prefix}-vm"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  size                = "Standard_B1s"            # safe/cheap test size
+  admin_username      = var.admin_username
+  network_interface_ids = [
+    azurerm_network_interface.main.id
+  ]
 
-  # Uncomment this line to delete the OS disk automatically when deleting the VM
-  # delete_os_disk_on_termination = true
+  # Use SSH key auth in CI; pass via TF_VAR_admin_ssh_public_key
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = var.admin_ssh_public_key
+  }
 
-  # Uncomment this line to delete the data disks automatically when deleting the VM
-  # delete_data_disks_on_termination = true
+  # Ensure password login is off for better security
+  disable_password_authentication = true
 
-  storage_image_reference {
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
     sku       = "22_04-lts"
     version   = "latest"
   }
-  storage_os_disk {
-    name              = "myosdisk1"
-    caching           = "ReadWrite"
-    create_option     = "FromImage"
-    managed_disk_type = "Standard_LRS"
-  }
-  os_profile {
-    computer_name  = "hostname"
-    admin_username = "testadmin"
-    admin_password = "Password1234!"
-  }
-  os_profile_linux_config {
-    disable_password_authentication = false
-  }
+
   tags = {
     environment = "staging"
   }
