@@ -1,22 +1,10 @@
 
-############################################
-# Provider (features required for azurerm)
-############################################
-provider "azurerm" {
-  features {}
-}
-
-############################################
-# Resource Group
-############################################
+# main.tf
 resource "azurerm_resource_group" "example" {
   name     = "${var.prefix}-resources"
   location = var.location
 }
 
-############################################
-# Networking: VNet, Subnet, NIC
-############################################
 resource "azurerm_virtual_network" "main" {
   name                = "${var.prefix}-network"
   address_space       = ["10.0.0.0/16"]
@@ -43,26 +31,19 @@ resource "azurerm_network_interface" "main" {
   }
 }
 
-############################################
-# Linux VM (modern resource)
-############################################
 resource "azurerm_linux_virtual_machine" "main" {
   name                = "${var.prefix}-vm"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-  size                = "Standard_B1s"            # safe/cheap test size
+  size                = "Standard_B1s"
   admin_username      = var.admin_username
-  network_interface_ids = [
-    azurerm_network_interface.main.id
-  ]
+  network_interface_ids = [azurerm_network_interface.main.id]
 
-  # Use SSH key auth in CI; pass via TF_VAR_admin_ssh_public_key
   admin_ssh_key {
     username   = var.admin_username
     public_key = var.admin_ssh_public_key
   }
 
-  # Ensure password login is off for better security
   disable_password_authentication = true
 
   os_disk {
