@@ -2,7 +2,6 @@
 #############################################
 # Resource Group
 #############################################
-
 resource "azurerm_resource_group" "example" {
   name     = "${var.prefix}-resources"
   location = var.location
@@ -11,9 +10,8 @@ resource "azurerm_resource_group" "example" {
 #############################################
 # Virtual Network
 #############################################
-
 resource "azurerm_virtual_network" "main" {
-  name                = "${var.prefix}-vnet-new"   # fresh name avoids any ghost VNet
+  name                = "${var.prefix}-vnet-new"   # fresh name avoids prior ghost VNet issues
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
@@ -22,7 +20,6 @@ resource "azurerm_virtual_network" "main" {
 #############################################
 # Subnet
 #############################################
-
 resource "azurerm_subnet" "internal" {
   name                 = "internal"
   resource_group_name  = azurerm_resource_group.example.name
@@ -33,7 +30,6 @@ resource "azurerm_subnet" "internal" {
 #############################################
 # Network Interface (NIC)
 #############################################
-
 resource "azurerm_network_interface" "main" {
   name                = "${var.prefix}-nic"
   location            = azurerm_resource_group.example.location
@@ -47,3 +43,7 @@ resource "azurerm_network_interface" "main" {
 }
 
 #############################################
+# Linux Virtual Machine
+#############################################
+resource "azurerm_linux_virtual_machine" "main" {
+  name                = "${var.prefix}-vm"
