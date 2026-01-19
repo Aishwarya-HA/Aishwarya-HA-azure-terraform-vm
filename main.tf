@@ -13,7 +13,7 @@ resource "azurerm_resource_group" "example" {
 #############################################
 
 resource "azurerm_virtual_network" "main" {
-  name                = "${var.prefix}-vnet-new"   # New name to avoid any prior ghost VNet issues
+  name                = "${var.prefix}-vnet-new"   # fresh name avoids any ghost VNet
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
@@ -37,3 +37,13 @@ resource "azurerm_subnet" "internal" {
 resource "azurerm_network_interface" "main" {
   name                = "${var.prefix}-nic"
   location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  ip_configuration {
+    name                          = "ipconfig1"
+    subnet_id                     = azurerm_subnet.internal.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+#############################################
