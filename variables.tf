@@ -1,38 +1,46 @@
 
-variable "location" {
-  description = "Azure region for resources"
-  type        = string
-  # Changed from centralindia -> southindia to avoid capacity issues
-  default     = "southindia"  # try "eastus" if you still hit capacity limits
-}
+############################################
+# General variables
+############################################
 
+# Common name prefix used for all resources
 variable "prefix" {
-  description = "Name prefix for all resources"
+  description = "Resource name prefix for all Azure resources (e.g., tfvmex)"
   type        = string
-  default     = "aishvm"
+  default     = "tfvmex"
 }
 
+# Deployment region
+variable "location" {
+  description = "Azure region for deployment"
+  type        = string
+  # Use a region you have access/quotas for: West Europe, East US, etc.
+  default     = "West Europe"
+}
+
+############################################
+# VM access variables
+############################################
+
+# Admin username for the Linux VM
 variable "admin_username" {
-  description = "Administrator username for the VM"
+  description = "Admin username for the Linux VM"
   type        = string
   default     = "azureuser"
 }
 
-variable "allowed_ssh_cidr" {
-  description = "CIDR allowed to SSH to the VM (restrict to your IP for better security)"
+# SSH public key to enable key-based authentication (recommended)
+# Provide via environment variable: TF_VAR_admin_ssh_public_key
+variable "admin_ssh_public_key" {
+  description = "SSH public key for VM login (contents of your .pub file)"
   type        = string
-  default     = "0.0.0.0/0"
+  # No default to encourage secure injection via CI/CD or tfvars
 }
 
-variable "ssh_public_key" {
-  description = "Your SSH public key (MUST be RSA: starts with 'ssh-rsa')"
-  type        = string
-  sensitive   = true
-}
-
-# Make VM size configurable. B1ms is small & commonly available.
-variable "vm_size" {
-  description = "Azure VM size (SKU). Change if the default is not available in your region."
-  type        = string
-  default     = "Standard_B1ms"  # alternatives: Standard_B2s, Standard_D2s_v3, Standard_D2ads_v5
-}
+# (Optional) If you ever need password auth instead of SSH keys:
+# Uncomment this and wire it in the VM resource.
+# variable "admin_password" {
+#   description = "Admin password for the VM (not recommended; prefer SSH keys)"
+#   type        = string
+#   sensitive   = true
+# }
