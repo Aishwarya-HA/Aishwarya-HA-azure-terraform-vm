@@ -1,11 +1,28 @@
 
-variable "prefix"        { type = string, default = "tfvmex" }
-variable "location"      { type = string, default = "Central India" }
+###############################
+# Global Variables
+###############################
 
-# Use a safe username (Azure can block common defaults)
+variable "prefix" {
+  description = "Resource naming prefix"
+  type        = string
+  default     = "tfvmex"
+}
+
+variable "location" {
+  description = "Azure region for deployment"
+  type        = string
+  default     = "Central India"
+}
+
+###############################
+# VM Access Variables
+###############################
+
 variable "admin_username" {
-  type    = string
-  default = "vmadmin"
+  description = "Admin username for Linux VM"
+  type        = string
+  default     = "vmadmin"
 }
 
 variable "admin_ssh_public_key" {
