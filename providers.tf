@@ -13,7 +13,7 @@ terraform {
     resource_group_name  = "rg-terraform-state-aish"
     storage_account_name = "tfstateaish21877"
     container_name       = "tfstate"
-    key                  = "dev.tfstate"
+    key                  = "prod2.tfstate"    # ← updated to new clean state file
   }
 }
 
